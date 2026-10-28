@@ -1,17 +1,12 @@
 ﻿using Microsoft.Data.SqlClient;
+using ECommerceStore.Helpers;
 using ECommerceStore.Models;
+using System.Data;
 
 namespace ECommerceStore.Repository;
 
 public class ReportRepository
 {
-    private readonly string _connectionString;
-
-    public ReportRepository(string connectionString)
-    {
-        _connectionString = connectionString;
-    }
-
     public async Task<List<ProductSalesSummary>> GetProductSalesSummaryAsync()
     {
         const string query = """
@@ -25,11 +20,11 @@ public class ReportRepository
             """;
 
         var summaries = new List<ProductSalesSummary>();
-        await using var connection = new SqlConnection(_connectionString);
-        await using var command = new SqlCommand(query, connection);
+        await using SqlConnection connection = DatabaseHelper.CreateConnection();
+        await using SqlCommand command = new(query, connection);
 
         await connection.OpenAsync();
-        await using var reader = await command.ExecuteReaderAsync();
+        await using SqlDataReader reader = await command.ExecuteReaderAsync();
 
         while (await reader.ReadAsync())
         {
